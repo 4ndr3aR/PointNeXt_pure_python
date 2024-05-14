@@ -51,7 +51,7 @@ parser.add_argument('--model_cfg',              default='basic_c',              
                     help='Configuration for building pcd backbone')
 
 # 日志参数
-parser.add_argument('--eval_cycle', '-ec',      default=5,                     type=int,
+parser.add_argument('--eval_cycle', '-ec',      default=10,                     type=int,
                     help='Evaluate every n epochs')
 parser.add_argument('--log_cycle', '-lc',       default=320,                    type=int,
                     help='Log every n steps')

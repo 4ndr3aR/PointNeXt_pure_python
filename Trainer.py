@@ -167,19 +167,23 @@ class Trainer:
 
     def test(self):
         self.model.eval()
-        self.dataset.eval()
+        #self.dataset.eval()
+        self.dataset.valid()
         if self.mode == 'test':
             self.epoch -= 1
         self.dataset.transforms.set_padding(False)
         eval_dataloader = DataLoader(dataset=self.dataset,
                                      batch_size=1,
+                                     #batch_size=self.args.batch_size,		# RuntimeError: Trying to resize storage that is not resizable
                                      num_workers=min(self.args.num_workers, 16),
                                      pin_memory=True,
                                      drop_last=False,
                                      shuffle=False)
 
+        print(f'Eval dlen = {len(eval_dataloader)}')
         loop = tqdm(eval_dataloader, total=len(eval_dataloader), leave=False)
         loop.set_description('eval')
+        loop_counter = 0
         for data in loop:
             pcd, label = data
             # show_pcd([pcd[0].T], normal=True)
@@ -189,13 +193,14 @@ class Trainer:
             with torch.no_grad():
                 points_cls = self.model(pcd)
                 loss, acc = self.criterion(points_cls, label)
-                if loop_counter % 50 == 0:
+                if loop_counter % 500 == 0:
                     print(f'{loss = } - {acc = }\nGT: {label.T}\nPred: {points_cls.argmax(dim=1).T}')
 
             self.epoch_metric_logger.add_metric('loss', loss.item())
             self.epoch_metric_logger.add_metric('acc', acc)
 
             loop.set_postfix(eval_loss=loss.item())
+            loop_counter += 1
 
         self.dataset.transforms.set_padding(True)
         print('Eval :', self.epoch_metric_logger.tostring())

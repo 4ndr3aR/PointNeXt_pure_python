@@ -128,15 +128,19 @@ class Trainer:
 
         loop = tqdm(self.dataloader, total=len(self.dataloader), leave=False)
         loop.set_description('train')
+        loop_counter = 0
         for data in loop:
             pcd, label = data
             # show_pcd([pcd[0].T], normal=True)
             pcd, label = pcd.to(self.args.device, non_blocking=True), label.to(self.args.device, non_blocking=True)
+            #print(f'GT: {label} - {pcd.shape}')
 
             # 前向传播与反向传播
             with self.cast():
                 points_cls = self.model(pcd)
                 loss, acc = self.criterion(points_cls, label)
+                if loop_counter % 50 == 0:
+                    print(f'{loss = } - {acc = }\nGT: {label.T}\nPred: {points_cls.argmax(dim=1).T}')
 
             self.epoch_metric_logger.add_metric('loss', loss.item())
             self.epoch_metric_logger.add_metric('acc', acc)
@@ -155,6 +159,7 @@ class Trainer:
                 self.writer.add_scalar("train/step_loss", sum(epoch_loss[-count:]) / count, self.step)
                 self.writer.add_scalar("train/step_acc", sum(epoch_acc[-count:]) / count, self.step)
                 self.step += 1
+            loop_counter += 1
         self.writer.add_scalar("train/epoch_loss", sum(epoch_loss) / len(epoch_loss), self.epoch)
         self.writer.add_scalar("train/epoch_acc", sum(epoch_acc) / len(epoch_acc), self.epoch)
         logger.info(f'Train Epoch {self.epoch:>4d} ' + self.epoch_metric_logger.tostring())
@@ -184,6 +189,8 @@ class Trainer:
             with torch.no_grad():
                 points_cls = self.model(pcd)
                 loss, acc = self.criterion(points_cls, label)
+                if loop_counter % 50 == 0:
+                    print(f'{loss = } - {acc = }\nGT: {label.T}\nPred: {points_cls.argmax(dim=1).T}')
 
             self.epoch_metric_logger.add_metric('loss', loss.item())
             self.epoch_metric_logger.add_metric('acc', acc)

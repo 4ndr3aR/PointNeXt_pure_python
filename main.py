@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Parameters import *
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_index
@@ -8,10 +9,13 @@ logger.setLevel(logging.INFO)
 import torch
 from Model import PointNeXt
 from dataset.ModelNet40 import ModelNet40
+from dataset.SymmetryNet import SymmetryNet
 from Loss import LabelSmoothingCE
 from Transforms import PCDPretreatment, get_data_augment
 from Trainer import Trainer
 from utils import IdentityScheduler
+
+from pathlib import Path
 
 
 def main():
@@ -56,8 +60,10 @@ def main():
             default_dataset_path_list = [r'../../Dataset/ModelNet40_points',
                                          r'/Users/dingziheng/dataset/ModelNet40_points',
                                          r'/root/dataset/ModelNet40_points']
+        elif args.dataset == 'SymmetryNet':
+            default_dataset_path_list = [ Path('/tmp/ramdrive/sym-10k-xz-split-class-noparallel') ]
         else:
-            raise ValueError
+            raise ValueError('Unknown dataset')
         for path in default_dataset_path_list:
             if os.path.exists(path):
                 args.dataset_path = path
@@ -67,8 +73,10 @@ def main():
         logger.info(f'Load default dataset from {args.dataset_path}')
     if args.dataset == 'ModelNet40':
         dataset = ModelNet40(dataroot=args.dataset_path, transforms=transforms)
+    elif args.dataset == 'SymmetryNet':
+        dataset = SymmetryNet(dataroot=args.dataset_path, transforms=transforms)
     else:
-        raise ValueError
+        raise ValueError('Unknown dataset')
 
     # 模型与损失函数
     logger.info('Prepare Models...')

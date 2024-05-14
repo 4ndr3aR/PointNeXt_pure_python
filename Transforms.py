@@ -6,6 +6,7 @@ import random
 from utils import voxel_down_sample
 from FeatureExtractorPart.utils import index_points, farthest_point_sample
 
+import time
 
 class PCDPretreatment(nn.Module):
     """
@@ -89,8 +90,11 @@ class PCDPretreatment(nn.Module):
         return voxel_down_sample(pcd, voxel_size=0.01, num=self.num, padding=self.padding)
 
     def fps(self, pcd):
+        time1 = time.time()
         sample_ids = farthest_point_sample(pcd[:, :3].unsqueeze(0), self.num)
         pcd = index_points(pcd.unsqueeze(0), sample_ids)[0]
+        time2 = time.time()
+        print(f'FPS: {time2 - time1:.3f} seconds')
         return pcd
 
     def set_padding(self, option: bool):

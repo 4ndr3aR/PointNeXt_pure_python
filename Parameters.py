@@ -22,8 +22,8 @@ parser.add_argument('--mode',                   default='train',                
                     help='train or test')
 
 # 数据参数
-parser.add_argument('--dataset',                default='ModelNet40',           type=str,
-                    choices=['ModelNet40'],
+parser.add_argument('--dataset',                default='SymmetryNet',          type=str,
+                    choices=['ModelNet40', 'SymmetryNet'],
                     help='Dataset name')
 parser.add_argument('--dataset_path',           default=None,                   type=str,
                     help='Path to checkpoint file')
@@ -79,14 +79,14 @@ DATA_AUG_CONFIG = {'None': aug_None, 'basic': aug_basic}
 basic_c = {
     'type': 'classification',
     'num_class': 40,
-    'max_input': 2048,  # 输入点最大数量
+    'max_input': 14400,  # 输入点最大数量
     'npoint': [512, 128, 32, 8],
     'radius_list': [[0.1, 0.2], [0.2, 0.4, 0.4], [0.4, 0.8], [0.8, 1.6]],
     'nsample_list': [[16, 16], [16, 16, 16], [16, 16], [8, 8]],
     'coor_dim': 3,
     'width': 32,
     'expansion': 4,
-    'normal': True,
+    'normal': False,
     'head': [512, 256]
 }
 

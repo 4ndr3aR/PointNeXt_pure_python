@@ -80,7 +80,7 @@ def index_points(points, idx):
     return new_points
 
 
-def farthest_point_sample(xyz, npoint):
+def farthest_point_sample(xyz, npoint, debug=False):
     """
     最远点采样
     随机选择一个初始点作为采样点，循环的将与当前采样点距离最远的点当作下一个采样点，直至满足采样点的数量需求
@@ -88,20 +88,41 @@ def farthest_point_sample(xyz, npoint):
     :param npoint: <int> 采样点数量
     :return: <torch.Tensor> (B, npoint) 采样点索引
     """
+    if debug:
+        print(f'{xyz.shape = }\n{xyz = }')
     device = xyz.device
     B, N, C = xyz.shape
     npoint = min(npoint, N)
     centroids = torch.zeros(B, npoint, dtype=torch.long).to(device)
+    if debug:
+        print(f'{centroids.shape = }\n{centroids = }')
     distance = torch.ones(B, N).to(device) * 1e10  # 每个点与最近采样点的最小距离
+    if debug:
+        print(f'{distance.shape = }\n{distance = }')
     farthest = torch.randint(0, N, (B,), dtype=torch.long).to(device)  # 随机选取初始点
+    if debug:
+        print(f'{farthest.shape = }\n{farthest = }')
 
     batch_indices = torch.arange(B, dtype=torch.long).to(device)
     for i in range(npoint):
         centroids[:, i] = farthest
         centroid = xyz[batch_indices, farthest, :].view(B, 1, -1)  # [bs, 1, coor_dim]
-        dist = torch.nn.functional.pairwise_distance(xyz, centroid)
+        dist = torch.nn.functional.pairwise_distance(xyz, centroid).long()
+        if debug:
+            print(f'{dist.shape = }\n{dist = }')
         mask = dist < distance
-        distance[mask] = dist[mask]
+        if debug:
+            print(f'{distance.shape = }\n{distance = }')
+        #print(f'{mask.shape = }\n{mask = }')
+        #mask = mask.long()
+        if debug:
+            print(f'{mask.shape = } - {mask.dtype = }')
+            print(f'{mask = }')
+            print(f'{dist[mask].shape = } - {dist[mask].dtype = }')
+            print(f'{dist[mask] = }')
+            print(f'{distance[mask].shape = } - {distance[mask].dtype = }')
+            print(f'{distance[mask] = }')
+        distance[mask] = dist[mask].float()
         farthest = torch.max(distance, -1)[1]
     return centroids
 

@@ -79,6 +79,7 @@ class Trainer:
         os.makedirs(self.save_root, exist_ok=True)
         logger.info(f'save root = \'{self.save_root}\'')
         logger.info(f'run in {self.args.device}')
+        print(f'{model = }')
 
     def run(self):
         if self.mode == 'train':

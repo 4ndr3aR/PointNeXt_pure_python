@@ -17,6 +17,7 @@ from utils import IdentityScheduler
 
 from pathlib import Path
 
+from torchsummary import summary
 
 def main():
     # 解析参数
@@ -84,6 +85,8 @@ def main():
     optimizer = Optimizer(model.parameters(), lr=args.lr, weight_decay=args.wd)
     scheduler = Scheduler(optimizer, T_max=args.num_epochs, eta_min=args.lr * 0.001)
     criterion = LabelSmoothingCE()
+
+    summary(model, (3, 14400))
 
     # 训练器
     logger.info('Trainer launching...')
